@@ -1,0 +1,75 @@
+{
+  "name": "Agente IA Grace Store - Public Version",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.audioText ? \"El cliente envió un audio...\" : \"Consulta de texto\" }}",
+        "options": {
+          "systemMessage": "ROL: Eres Emet, vendedor de Graces Store J&V...",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [0, 0],
+      "id": "5553b3a1-0786-4cfe-9103-9a19900036b1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "ID_DE_TU_GOOGLE_SHEET_AQUI",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [752, 400],
+      "name": "Preguntas_frecuentes"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer TU_API_KEY_DE_GROQ_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-576, 400],
+      "name": "HTTP Request Groq"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "TU_PHONE_ID_META_AQUI",
+        "recipientPhoneNumber": "={{ $json.wa_id }}",
+        "textBody": "={{ $node[\"AI Agent\"].json[\"output\"] }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [720, 0],
+      "name": "Enviar mensaje WhatsApp"
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {},
+  "id": "workflow-limpio"
+}
